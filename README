@@ -24,3 +24,20 @@ To install:
     1) Add a call to the script as part of your post-commit hook.  On Windows, the call will look like this:
         python.exe C:\<path_to_script>\postToHipChat.py -s "%REPOS%" -r %REV%
 
+Configuration:
+    Either specify config values on command line, or in a config file. The command line takes precendence over 
+    the config file.
+
+Command line:
+    -f / --config  : config file
+    -k / --room    : room name
+    -t / --token   : token name
+
+Config file format. All values are optional. The section must be called 'hipchat'.
+===============
+[hipchat]
+NAME=<name>
+ROOM=<room>
+TOKEN=<token>
+===============
+
