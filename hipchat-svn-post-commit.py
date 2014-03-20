@@ -66,12 +66,6 @@ def sendToHipChat(msg, token, room, name):
         'notify': 1,
     }
 
-    t = threading.Thread(target=open_url)
-    t.daemon = True
-    t.start()
-
-
-def open_url():
     # urlencode and post
     urllib2.urlopen("https://api.hipchat.com/v1/rooms/message",
                     urllib.urlencode(request))
@@ -165,7 +159,10 @@ def main():
         sys.exit(2)
 
     chatMsg = getCommitInfo(repository, revision)
-    sendToHipChat(chatMsg, token, room, name)
+
+    t = threading.Thread(target=sendToHipChat, args=(chatMsg, token, room, name))
+    t.daemon = True
+    t.start()
 
 
 if __name__ == "__main__":
