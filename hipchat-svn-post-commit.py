@@ -21,14 +21,17 @@ import urllib
 import urllib2
 import re
 
-# Set hipchat info
-#
-TOKEN="<token>"
-ROOM="<room name>"
-NAME="Subversion"
+# Default room name
+room = "<room name>"
 
-# svnlook location
-LOOK="/usr/bin/svnlook"
+# Default token
+token = "<token>"
+
+# Default chat user name
+user="Subversion"
+
+# Default svnlook location
+svnlook="/usr/bin/svnlook"
 
 ##############################################################
 ##############################################################
@@ -56,7 +59,7 @@ def sendToHipChat( msg, token, room, name ):
 	urllib2.urlopen( "https://api.hipchat.com/v1/rooms/message", urllib.urlencode( request ) )
   
 def runLook( *args ):
-        return subprocess.Popen([LOOK] + list(args), stdout=subprocess.PIPE).stdout.read()
+        return subprocess.Popen([svnlook] + list(args), stdout=subprocess.PIPE).stdout.read()
 
 def getCommitInfo( repo, revision ):
 	comment = runLook("log", repo, "-r", revision)
@@ -74,17 +77,23 @@ def main():
         repository = False
         revision = False
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "r:s:", ["revision=", "repository="])
+                opts, args = getopt.getopt(sys.argv[1:], "r:s:k:t:u:", ["revision=", "repository=", "config=", "room=", "token=", "user="])
         except getopt.GetoptError, err:
                 print >>sys.stderr, str(err)
                 print "Usage:"
-                print "hipchat-svn-post-commit.py -r <revision> -s <repository>"
-                sys.exit(2)
+                print "hipchat-svn-post-commit.py -r <revision> -s <repository> [-k room] [-t token] [-n name]"
+                sys.exit(1)
         for o, a in opts:
                 if o in ("-r", "--revision"):
                        revision = a
                 elif o in ("-s", "--repository"):
                        repository = a
+                elif o in ("-k", "--room"):
+                       room = a
+                elif o in ("-t", "--token"):
+                       token = a
+                elif o in ("-n", "--name"):
+                       name = a
 
         if not revision:
                 print "Sepcify a revision with -r or --revision"
@@ -94,7 +103,7 @@ def main():
                 sys.exit(2)
 
 	chatMsg = getCommitInfo( repository, revision )
-	sendToHipChat( chatMsg, TOKEN, ROOM, NAME )
+	sendToHipChat( chatMsg, token, room, name )
 
 if __name__ == "__main__":
 	main()
