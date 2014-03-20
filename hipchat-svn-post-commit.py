@@ -16,7 +16,7 @@
 import os
 import sys
 import subprocess
-import argparse
+import getopt
 import urllib
 import urllib2
 import re
@@ -28,7 +28,7 @@ ROOM="<room name>"
 NAME="Subversion"
 
 # svnlook location
-LOOK="svnlook"
+LOOK="/usr/bin/svnlook"
 
 ##############################################################
 ##############################################################
@@ -56,8 +56,7 @@ def sendToHipChat( msg, token, room, name ):
 	urllib2.urlopen( "https://api.hipchat.com/v1/rooms/message", urllib.urlencode( request ) )
   
 def runLook( *args ):
-	# check_output will except if it fails so we don't spam the room with 'run svnlook help for help' messages
-	return subprocess.check_output( ' '.join([LOOK] + list(args)), shell=True, stderr=subprocess.STDOUT)
+        return subprocess.Popen([LOOK] + list(args), stdout=subprocess.PIPE).stdout.read()
 
 def getCommitInfo( repo, revision ):
 	comment = runLook("log", repo, "-r", revision)
@@ -72,13 +71,29 @@ def getCommitInfo( repo, revision ):
 	return chatMsg
 
 def main():
-	parser = argparse.ArgumentParser(description='Post commit hook that sends HipChat messages.')
-	parser.add_argument('-r', '--revision', metavar='<svn rev>', required=True, help='SVN revision')
-	parser.add_argument('-s', '--repository', metavar='<repository>', required=True, help='Repository to operate on')
+        repository = False
+        revision = False
+        try:
+                opts, args = getopt.getopt(sys.argv[1:], "r:s:", ["revision=", "repository="])
+        except getopt.GetoptError, err:
+                print >>sys.stderr, str(err)
+                print "Usage:"
+                print "hipchat-svn-post-commit.py -r <revision> -s <repository>"
+                sys.exit(2)
+        for o, a in opts:
+                if o in ("-r", "--revision"):
+                       revision = a
+                elif o in ("-s", "--repository"):
+                       repository = a
 
-	args = parser.parse_args()
-	
-	chatMsg = getCommitInfo( args.repository, args.revision )
+        if not revision:
+                print "Sepcify a revision with -r or --revision"
+                sys.exit(2)
+        if not repository:
+                print "Specify a repository with -s or --repository"
+                sys.exit(2)
+
+	chatMsg = getCommitInfo( repository, revision )
 	sendToHipChat( chatMsg, TOKEN, ROOM, NAME )
 
 if __name__ == "__main__":
