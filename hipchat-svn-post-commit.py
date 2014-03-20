@@ -25,6 +25,7 @@ import urllib
 import urllib2
 import re
 import ConfigParser
+import threading
 
 # Default room name
 ROOM = "<room name>"
@@ -63,6 +64,11 @@ def sendToHipChat( msg, token, room, name ):
 		'notify': 1,
 	}
 
+    t = threading.Thread(target=open_url)
+    t.daemon = True
+    t.start()
+
+def open_url():
 	# urlencode and post
 	urllib2.urlopen( "https://api.hipchat.com/v1/rooms/message", urllib.urlencode( request ) )
   
