@@ -9,7 +9,7 @@
 # Set config values in code, command line, or config file.
 #
 
-# This script is set to publish information after SVN commits to HipChat. 
+# This script is set to publish information after SVN commits to HipChat.
 #
 # Required files/Application/services:
 #     * Subversion: http://subversion.tigris.org/
@@ -34,26 +34,28 @@ ROOM = "<room name>"
 TOKEN = "<token>"
 
 # Default chat user name
-NAME="Subversion"
+NAME = "Subversion"
 
 # Default config
-CONFIG="/etc/svn/hipchat.cfg"
+CONFIG = "/etc/svn/hipchat.cfg"
 
 # Default svnlook location
-svnlook="/usr/bin/svnlook"
+svnlook = "/usr/bin/svnlook"
 
-##############################################################
-##############################################################
-############ Edit below at your own risk #####################
-##############################################################
-##############################################################
+#
+#
+# Edit below at your own risk #####################
+#
+#
 
-def sendToHipChat( msg, token, room, name ):
+
+def sendToHipChat(msg, token, room, name):
     # replace newlines with XHTML <br />
     msg = msg.replace("\r", "").replace("\n", "<br />")
 
     # replace bare URLs with real hyperlinks
-    msg = re.sub( r'(?<!href=")((?:https?|ftp|mailto)\:\/\/[^ \n]*)', r'<a href="\1">\1</a>', msg)
+    msg = re.sub(
+        r'(?<!href=")((?:https?|ftp|mailto)\:\/\/[^ \n]*)', r'<a href="\1">\1</a>', msg)
 
     # create request dictionary
     request = {
@@ -68,14 +70,18 @@ def sendToHipChat( msg, token, room, name ):
     t.daemon = True
     t.start()
 
+
 def open_url():
     # urlencode and post
-    urllib2.urlopen( "https://api.hipchat.com/v1/rooms/message", urllib.urlencode( request ) )
-  
-def runLook( *args ):
+    urllib2.urlopen("https://api.hipchat.com/v1/rooms/message",
+                    urllib.urlencode(request))
+
+
+def runLook(*args):
         return subprocess.Popen([svnlook] + list(args), stdout=subprocess.PIPE).stdout.read()
 
-def getCommitInfo( repo, revision ):
+
+def getCommitInfo(repo, revision):
     comment = runLook("log", repo, "-r", revision)
     author = runLook("author", repo, "-r", revision)
     files = runLook("changed", repo, "-r", revision)
@@ -84,8 +90,9 @@ def getCommitInfo( repo, revision ):
 %s r%s : %s
 %s
 """ % (author.strip(), revision, comment.strip(), files)).strip()
-  
+
     return chatMsg
+
 
 def main():
     revision = False
