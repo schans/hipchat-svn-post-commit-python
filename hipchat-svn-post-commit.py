@@ -64,9 +64,9 @@ def getCommitInfo( repo, revision ):
 	files = runLook("changed", repo, "-r", revision)
 
 	chatMsg = ("""
-%s committed revision %s
+%s r%s : %s
 %s
-""" % (author, revision, comment)).strip()
+""" % (author.strip(), revision, comment.strip(), files)).strip()
   
 	return chatMsg
 
