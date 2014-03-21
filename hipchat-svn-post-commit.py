@@ -75,18 +75,19 @@ def runLook(*args):
         return subprocess.Popen([svnlook] + list(args), stdout=subprocess.PIPE).stdout.read()
 
 
-def getCommitInfo(repo, revision):
+def getCommitInfo(repo, revision, svn_url):
     comment = runLook("log", repo, "-r", revision)
     author = runLook("author", repo, "-r", revision)
     files = runLook("changed", repo, "-r", revision)
 
 
     url_path = files.split()
+    url = svn_url + "/" + url_path[1]
 
     chatMsg = ("""
 %s r%s : %s
-%s : https://svn.onehippo.org/repos/closed/%s?p=%s
-""" % (author.strip(), revision, comment.strip(), files, url_path[1], revision)).strip()
+%s : %s?p=%s
+""" % (author.strip(), revision, comment.strip(), files, url, revision)).strip()
 
 
     return chatMsg
@@ -148,7 +149,7 @@ def main():
             if config.has_option('hipchat', 'ROOM'):
                 room = config.get('hipchat', 'ROOM')
             if config.has_option('hipchat', 'SVN_URL'):
-                room = config.get('hipchat', 'SVN_URL')                 
+                svn_url = config.get('hipchat', 'SVN_URL')                 
 
     # cmd line overrides defaults and config
     if cmd_token:
@@ -165,7 +166,7 @@ def main():
         print "Specify a repository with -s or --repository"
         sys.exit(2)
 
-    chatMsg = getCommitInfo(repository, revision)
+    chatMsg = getCommitInfo(repository, revision, svn_url)
     sendToHipChat(chatMsg, token, room, name)
 
 
