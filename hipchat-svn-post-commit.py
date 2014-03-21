@@ -129,6 +129,7 @@ def main():
     token = TOKEN
     name = NAME
     room = ROOM
+    svn_url = 'http://127.0.0.1/svn/'
 
     # config overrides defaultsif cmd_room:
     if cmd_config:
@@ -144,8 +145,10 @@ def main():
                 token = config.get('hipchat', 'TOKEN')
             if config.has_option('hipchat', 'NAME'):
                 name = config.get('hipchat', 'NAME')
-            if config.has_option('hipchat', 'TOKEN'):
+            if config.has_option('hipchat', 'ROOM'):
                 room = config.get('hipchat', 'ROOM')
+            if config.has_option('hipchat', 'SVN_URL'):
+                room = config.get('hipchat', 'SVN_URL')                 
 
     # cmd line overrides defaults and config
     if cmd_token:
@@ -163,10 +166,8 @@ def main():
         sys.exit(2)
 
     chatMsg = getCommitInfo(repository, revision)
+    sendToHipChat(chatMsg, token, room, name)
 
-    t = threading.Thread(target=sendToHipChat, args=(chatMsg, token, room, name))
-    t.daemon = True
-    t.start()
 
 
 if __name__ == "__main__":
