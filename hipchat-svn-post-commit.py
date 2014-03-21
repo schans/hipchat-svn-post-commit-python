@@ -80,10 +80,14 @@ def getCommitInfo(repo, revision):
     author = runLook("author", repo, "-r", revision)
     files = runLook("changed", repo, "-r", revision)
 
+
+    url_path = files.split()
+
     chatMsg = ("""
 %s r%s : %s
-%s
-""" % (author.strip(), revision, comment.strip(), files)).strip()
+%s : https://svn.onehippo.org/repos/closed/%s?p=%s
+""" % (author.strip(), revision, comment.strip(), files, url_path[1], revision)).strip()
+
 
     return chatMsg
 
